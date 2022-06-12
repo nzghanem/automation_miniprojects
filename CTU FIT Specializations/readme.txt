@@ -1,0 +1,1 @@
+You can watch video I made about this mini project here: https://youtu.be/N5RfMp8xlb4
