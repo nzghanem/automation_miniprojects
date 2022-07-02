@@ -11,7 +11,7 @@ import pathlib
 class send_email():
     def __init__(self, receiver_email, msn_link, city):
         self.sender_email = "p.nezar.ghanem@gmail.com"
-        self.password = "wjkeukdtdnramzxs"
+        self.password = "opwexbckxwitatyo"
         self.msn_link = msn_link
         self.dataCity = list(WeatherData(self.msn_link))
         self.receiver_email = receiver_email
@@ -32,7 +32,7 @@ class send_email():
                     conditions,
                     condition
                 )
-        return weather_condition
+        return weather_condition + ".jpg"
 
     def looplis(self, index, starting):
         string = ""
@@ -52,23 +52,20 @@ class send_email():
     def get_realfeel(self):
         return self.dataCity[1].split("\n")[1]
 
+    def create_string(self):
+        data = self.ten_day_weather()
+        string = ""
+        for i in range(9):
+            string += f"<img src='cid:{self.image_cid[i]}' width='50' height='50'/> {data[i]}" + "\n"
+        return string
+
     def sendto(self):
         message = EmailMessage()
         message["To"] = self.receiver_email
         message["From"] = self.sender_email
         message["Subject"] = f"Today is {self.dataCity[0][0][2]} in {self.city}"
-        data = self.ten_day_weather()
-        attachment_cid1 = make_msgid()
-        attachment_cid2 = make_msgid()
-        attachment_cid3 = make_msgid()
-        attachment_cid4 = make_msgid()
-        attachment_cid5 = make_msgid()
-        attachment_cid6 = make_msgid()
-        attachment_cid7 = make_msgid()
-        attachment_cid8 = make_msgid()
-        attachment_cid9 = make_msgid()
-        attachment_cid10 = make_msgid()
-
+        special_id = make_msgid()[1:-1]
+        self.image_cid = [make_msgid()[1:-1] for _ in range(9)]
         message.set_content(f"""
             <p>
                 Morning Nezar,
@@ -76,7 +73,7 @@ class send_email():
 
             <!-- Weather Today -->
             <p style='font-family:Cavolini;font-size:30px;white-space: pre-line'>
-                <img src="cid:{attachment_cid1[1:-1]}" width="50" height="50"/> Today is {self.dataCity[0][0][2].lower()} in {self.city}
+                <img src="cid:{special_id}" width="50" height="50"/> Today is {self.dataCity[0][0][2].lower()} in {self.city}
                 <p style="font-size:20px;margin-left:100px"><strong>Feels like:</strong> {self.get_realfeel()}</p>
                 <p style="font-size:20px;margin-left:100px"><strong>Today's High:</strong> {self.dataCity[0][0][1]}</p>
                 <p style="font-size:20px;margin-left:100px"><strong>Today's Low:</strong> {self.dataCity[0][0][3]}</p>
@@ -86,60 +83,25 @@ class send_email():
             <p style='font-family:Cavolini;font-size:30px'>
                 Weather Next 10 Days
                     <p style='font-family:Cavolini;font-size:22px;white-space: pre-line;margin-left:100px'>
-                        <img src="cid:{attachment_cid2[1:-1]}" width="50" height="50"/> {data[0]}
-                        <img src="cid:{attachment_cid3[1:-1]}" width="50" height="50"/> {data[1]}
-                        <img src="cid:{attachment_cid4[1:-1]}" width="50" height="50"/> {data[2]}
-                        <img src="cid:{attachment_cid5[1:-1]}" width="50" height="50"/> {data[3]}
-                        <img src="cid:{attachment_cid6[1:-1]}" width="50" height="50"/> {data[4]}
-                        <img src="cid:{attachment_cid7[1:-1]}" width="50" height="50"/> {data[5]}
-                        <img src="cid:{attachment_cid8[1:-1]}" width="50" height="50"/> {data[6]}
-                        <img src="cid:{attachment_cid9[1:-1]}" width="50" height="50"/> {data[7]}
-                        <img src="cid:{attachment_cid10[1:-1]}" width="50" height="50"/> {data[8]}
+                        {self.create_string()}
                     </p>
             </p>
 
             <a href={self.msn_link}>Source</a>
             """, 'html')
 
-        with open(self.get_path(self.dataCity[0][0][2]) + ".jpg", 'rb') as fp:
+        with open(self.get_path(self.dataCity[0][0][2]), 'rb') as fp:
             message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid1)
+                fp.read(), 'image', 'jpg', cid=f"<{special_id}>")
+        self.dataCity[2].pop(0)
 
-        with open(self.get_path(self.dataCity[2][1]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid2)
-
-        with open(self.get_path(self.dataCity[2][2]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid3)
-
-        with open(self.get_path(self.dataCity[2][3]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid4)
-
-        with open(self.get_path(self.dataCity[2][4]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid5)
-
-        with open(self.get_path(self.dataCity[2][5]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid6)
-
-        with open(self.get_path(self.dataCity[2][6]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid7)
-
-        with open(self.get_path(self.dataCity[2][7]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid8)
-
-        with open(self.get_path(self.dataCity[2][8]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid9)
-
-        with open(self.get_path(self.dataCity[2][9]) + ".jpg", 'rb') as fp:
-            message.add_related(
-                fp.read(), 'image', 'jpg', cid=attachment_cid10)
+        for idx, imgtup in enumerate(self.dataCity[2]):
+            with open(self.get_path(imgtup), "rb") as img:
+                message.get_payload()[0].add_related(
+                    img.read(),
+                    maintype="image",
+                    subtype="jpg",
+                    cid=f"<{self.image_cid[idx]}>")
 
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
@@ -149,4 +111,4 @@ class send_email():
 
 
 if __name__ == "__main__":
-    send_email("nz.ghanem@gmail.com", "https://www.msn.com/en-us/weather/forecast/in-Brno,South-Moravia?ocid=ansmsnweather&loc=eyJsIjoiQnJubyIsInIiOiJTb3V0aCBNb3JhdmlhIiwicjIiOiJCcm5vIC0gbcSbc3RvIiwiYyI6IkN6ZWNoaWEiLCJpIjoiQ1oiLCJnIjoiZW4tdXMiLCJ4IjoiMTYuNDkiLCJ5IjoiNDkuMjEifQ%3D%3D&weadegreetype=C", "Brno")
+    send_email("nz.ghanem@gmail.com", "https://www.msn.com/en-us/weather/forecast/in-Brno,South-Moravia?loc=eyJsIjoiQnJubyIsInIiOiJTb3V0aCBNb3JhdmlhIiwicjIiOiJCcm5vIC0gbcSbc3RvIiwiYyI6IkN6ZWNoaWEiLCJpIjoiQ1oiLCJ0IjoxMDIsImciOiJlbi11cyIsIngiOiIxNi42MTMyIiwieSI6IjQ5LjE5MjEifQ%3D%3D&weadegreetype=C", "Brno")
